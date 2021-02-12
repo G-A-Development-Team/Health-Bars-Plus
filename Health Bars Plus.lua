@@ -320,9 +320,9 @@ local _h_gttc_groupbox_hbpconfig = 432
 local _w_gttc_groupbox_hbpconfig = 296*2+16
 
 --Health Bars Plus Config Tab
+--Disable for right now
+--[=====[ 
 local _gui_tab_teams_config = gui.Tab(_gui_ref_misc, "HBP_gui_tab_teams_config", "Health Bars Plus Config")
-_gui_tab_teams_config:SetDisabled(true)
-_gui_tab_teams_config:SetInvisible(true)
 
 --Groupbox for HBP config
 local _gttc_groupbox_hbpconfig = gui.Groupbox(_gui_tab_teams_config, "Manage Health Bar Plus Configurations", _x_gttc_groupbox_hbpconfig, _y_gttc_groupbox_hbpconfig, _w_gttc_groupbox_hbpconfig, _h_gttc_groupbox_hbpconfig)
@@ -355,7 +355,7 @@ _gttcg_button_hbprenameconfig:SetHeight(28)
 _gttcg_button_hbprenameconfig:SetWidth(136)
 _gttcg_button_hbprenameconfig:SetPosX(304 + 136)
 _gttcg_button_hbprenameconfig:SetPosY(64)
-
+--]=====]
 --End _gui_tab_teams
 
 --Normal accessing functions
@@ -705,7 +705,6 @@ local function menuvars()
     _gtt_groupbox_hbpnametaglength:SetDisabled(not _gttg_checkbox_enablehbphud:GetValue())
 
     _gttl_groupbox_hbplpos:SetDisabled(true) --Not needed
-    _gui_tab_teams_config:SetInvisible(true) --Not added yet
     _gttl_groupbox_hbplbarsizes:SetDisabled(not _gttlg_checkbox_enablehbplocalhud:GetValue())
     _gttl_groupbox_hbplindivbarpos:SetDisabled(not _gttlg_checkbox_enablehbplocalhud:GetValue())
     _gttl_groupbox_hbplcounterpos:SetDisabled(not _gttlg_checkbox_enablehbplocalhud:GetValue())
