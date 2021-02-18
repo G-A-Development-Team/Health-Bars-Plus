@@ -37,7 +37,7 @@ local _big_defaultfont = draw.CreateFont("Bahnschrift", 30)
 
 --GUI
 --Script GUI Reference (Only 1)
-local _gui_ref_misc = gui.Reference("MISC")
+local _gui_ref_misc = gui.Reference("VISUALS")
 
 --GUI Tabs
 --Start _gui_tab_teams
