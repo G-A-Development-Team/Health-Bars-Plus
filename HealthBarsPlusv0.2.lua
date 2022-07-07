@@ -23,16 +23,17 @@ local MyTeam = {
 	Z = 0,
 	HealthW = 0.5,
 	HealthH = 0.1,
-	HealthPaddingT = 0.1,
-	HealthPaddingB = 0.1,
-	HealthPaddingL = 0.1,
-	HealthPaddingR = 0.1,
+	HealthX = 0.1,
+	HealthY = 0.1,
+	HealthColor,
 	ArmorW = 0.5,
 	ArmorH = 0.1,
-	ArmorPaddingT = 0.1,
-	ArmorPaddingB = 0.1,
-	ArmorPaddingL = 0.1,
-	ArmorPaddingR = 0.1,
+	ArmorX = 0.1,
+	ArmorY = 0.1,
+	ArmorColor,
+	DefuseW = 0.5,
+	DefuseH = 0.1,
+	TextColor,
 	Move = false
 }
 
@@ -43,18 +44,17 @@ local Enemy = {
 	Z = 0,
 	HealthW = 0.5,
 	HealthH = 0.1,
-	HealthPaddingT = 0.1,
-	HealthPaddingB = 0.1,
-	HealthPaddingL = 0.1,
-	HealthPaddingR = 0.1,
+	HealthX = 0.1,
+	HealthY = 0.1,
+	HealthColor,
 	ArmorW = 0.5,
 	ArmorH = 0.1,
-	ArmorPaddingT = 0.1,
-	ArmorPaddingB = 0.1,
-	ArmorPaddingL = 0.1,
-	ArmorPaddingR = 0.1,
+	ArmorX = 0.1,
+	ArmorY = 0.1,
+	ArmorColor,
 	DefuseW = 0.5,
 	DefuseH = 0.1,
+	TextColor,
 	Move = false
 }
 
@@ -65,18 +65,17 @@ local Health = {
 	Z = 0,
 	HealthW = 0.5,
 	HealthH = 0.1,
-	HealthPaddingT = 0.1,
-	HealthPaddingB = 0.1,
-	HealthPaddingL = 0.1,
-	HealthPaddingR = 0.1,
+	HealthX = 0.1,
+	HealthY = 0.1,
+	HealthColor,
 	ArmorW = 0.5,
 	ArmorH = 0.1,
-	ArmorPaddingT = 0.1,
-	ArmorPaddingB = 0.1,
-	ArmorPaddingL = 0.1,
-	ArmorPaddingR = 0.1,
+	ArmorX = 0.1,
+	ArmorY = 0.1,
+	ArmorColor,
 	DefuseW = 0.5,
 	DefuseH = 0.1,
+	TextColor,
 	Move = false
 	
 }
@@ -101,6 +100,12 @@ local function moveContainer(Cont)
 	end
 end
 
+--Handles drawing of containers
+local function drawContainer(Cont)
+	draw.Color(Cont.TextColor)
+	draw.TextShadow(Cont.X+(Cont.H*Cont.HealthX), Cont.Y+(Cont.W*Cont.HealthY), "username")
+end
+
 --Fonts
 local fntSml = draw.CreateFont("Bahnschrift", 10)
 local fntNml = draw.CreateFont("Bahnschrift", 20)
@@ -113,12 +118,15 @@ local gui_ref = gui.Reference("VISUALS")
 local gui_tab = gui.Tab(gui_ref, "HBP", "Health Bars Plus")
 
 
-local HealthW = HealthBoxW/player:GetMaxHealth()
-local ArmorW = ArmorBoxW/100
-local m_ArmorValue = player:GetProp("m_ArmorValue")
+--local HealthW = HealthBoxW/player:GetMaxHealth()
+--local ArmorW = ArmorBoxW/100
+--local m_ArmorValue = player:GetProp("m_ArmorValue")
 
 
 callbacks.Register("Draw", function()
+	drawContainer(Enemy)
+	drawContainer(MyTeam)
+	drawContainer(Health)
 	moveContainer(Enemy)
 	moveContainer(MyTeam)
 	moveContainer(Health)
