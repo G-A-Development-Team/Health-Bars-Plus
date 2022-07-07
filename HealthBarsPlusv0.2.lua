@@ -12,6 +12,11 @@
 -- This is a product of the G&A Development Team
 --
 
+--Fonts
+local fntSml = draw.CreateFont("Bahnschrift", 10)
+local fntNml = draw.CreateFont("Bahnschrift", 20)
+local fntBig = draw.CreateFont("Bahnschrift", 30)
+
 --Screen dimensions
 local screenW, screenH = draw.GetScreenSize()
 
@@ -19,8 +24,8 @@ local screenW, screenH = draw.GetScreenSize()
 local MyTeam = {
 	W = 150,
 	H = 300,
-	X = 0,
-	Z = 0,
+	X = 1000,
+	Y = 300,
 	HealthW = 0.5,
 	HealthH = 0.1,
 	HealthX = 0.1,
@@ -34,14 +39,14 @@ local MyTeam = {
 	DefuseW = 0.5,
 	DefuseH = 0.1,
 	TextColor,
-	Move = false
+	Move = true
 }
 
 local Enemy = {
 	W = 150,
 	H = 300,
 	X = 160,
-	Z = 0,
+	Y = 0,
 	HealthW = 0.5,
 	HealthH = 0.1,
 	HealthX = 0.1,
@@ -62,7 +67,7 @@ local Health = {
 	W = 200,
 	H = 100,
 	X = 330,
-	Z = 0,
+	Y = 0,
 	HealthW = 0.5,
 	HealthH = 0.1,
 	HealthX = 0.1,
@@ -82,7 +87,8 @@ local Health = {
 
 --Handles dragging of containers
 local function moveContainer(Cont)
-	if Move then
+	if Cont.Move then
+		print("Yesss" .. Cont.Y)
 		if input.IsButtonDown(1) then
 			mouseX, mouseY = input.GetMousePos();
 			if shouldDrag then
@@ -102,22 +108,24 @@ end
 
 --Handles drawing of containers
 local function drawContainer(Cont)
+	draw.SetFont(fntNml)
 	draw.Color(Cont.TextColor)
 	draw.TextShadow(Cont.X+(Cont.H*Cont.HealthX), Cont.Y+(Cont.W*Cont.HealthY), "username")
 end
 
---Fonts
-local fntSml = draw.CreateFont("Bahnschrift", 10)
-local fntNml = draw.CreateFont("Bahnschrift", 20)
-local fntBig = draw.CreateFont("Bahnschrift", 30)
+
 
 --Script GUI Reference
 local gui_ref = gui.Reference("VISUALS")
 
 --Health Bars Plus Tab
 local gui_tab = gui.Tab(gui_ref, "HBP", "Health Bars Plus")
-
-
+--Groupbox for HBPL colors
+local gui_colors = gui.Groupbox(gui_tab, "HBP Colors", 16, 32+156-2, 296, 311)
+local gui_textcolor = gui.ColorPicker(gui_colors, "HBP_colorpicker_textcolor", "Text Color", 255, 255, 255, 255)
+Enemy.TextColor = gui_textcolor:GetValue()
+MyTeam.TextColor = gui_textcolor:GetValue()
+Health.TextColor = gui_textcolor:GetValue()
 --local HealthW = HealthBoxW/player:GetMaxHealth()
 --local ArmorW = ArmorBoxW/100
 --local m_ArmorValue = player:GetProp("m_ArmorValue")
