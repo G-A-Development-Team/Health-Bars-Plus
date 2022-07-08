@@ -124,7 +124,7 @@ local gui_healthcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_healt
 local gui_armoroutline = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_armoroutline", "Armor Outline Color", 0, 0, 0, 255)
 local gui_armorcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_armorcolor", "Armor Color", 13, 131, 255)
 local gui_preview = gui.Checkbox(gui_group_settings, "HBP_checkbox_preview", "Preview", false);
-local gui_moveteam_items = {"None", "My Team", "Enemy"};
+local gui_moveteam_items = {"None", "My Team", "Enemy", "Health"};
 local gui_moveteam = gui.Combobox(gui_group_settings, "", "Move Team/Health Bars", unpack(gui_moveteam_items));
 local gui_defuse = gui.Checkbox(gui_group_settings, "HBP_checkbox_defuse", "Defuse Kit", true);
 local gui_healtharmor = gui.Checkbox(gui_group_settings, "HBP_checkbox_healtharmor", "Health/Armor Counter", true);
@@ -133,15 +133,19 @@ local gui_teamx = gui.Slider(gui_group_locations, "HBP_slider_teamx", "My Team X
 local gui_teamy = gui.Slider(gui_group_locations, "HBP_slider_teamy", "My Team Y", 5.0, 0.0, 3000.0, 0.001);
 local gui_enemyx = gui.Slider(gui_group_locations, "HBP_slider_enemyx", "Enemy X", 5.0, 0.0, 3000.0, 0.001);
 local gui_enemyy = gui.Slider(gui_group_locations, "HBP_slider_enemyy", "Enemy Y", 5.0, 0.0, 3000.0, 0.001);
+local gui_healthx = gui.Slider(gui_group_locations, "HBP_slider_healthx", "Health X", 5.0, 0.0, 3000.0, 0.001);
+local gui_healthy = gui.Slider(gui_group_locations, "HBP_slider_healthy", "Health Y", 5.0, 0.0, 3000.0, 0.001);
 local gui_teamx_value = gui_teamx:GetValue()
 local gui_teamy_value = gui_teamy:GetValue()
 local gui_enemyx_value = gui_enemyx:GetValue()
 local gui_enemyy_value = gui_enemyy:GetValue()
+local gui_healthx_value = gui_healthx:GetValue()
+local gui_healthy_value = gui_healthy:GetValue()
 
 -- Fonts
 local fntSml = draw.CreateFont("Bahnschrift", 18)
 local fntNml = draw.CreateFont("Bahnschrift", 20)
-local fntBig = draw.CreateFont("Bahnschrift", 30)
+local fntBig = draw.CreateFont("Bahnschrift", 40)
 
 -- Screen dimensions
 local screenW, screenH = draw.GetScreenSize()
@@ -220,24 +224,24 @@ gui_enemyy:SetValue(Enemy.Y)
 local Health = {
 	TeamName = "Health",
 	W = 200,
-	H = 100,
+	H = 150,
 	X = 330,
 	Y = 0,
-	HealthW = 0.8,
-	HealthH = 0.05,
-	HealthX = 0.1,
-	HealthY = 0.1,
-	HealthBarX = 0.09,
-	HealthBarY = 0.16,
+	HealthW = 1,
+	HealthH = 0.2,
+	HealthX = 0.0,
+	HealthY = 0.0,
+	HealthBarX = 0.0,
+	HealthBarY = 0.0,
 	HealthOutline = 0.01,
 	HealthColor,
 	HealthOutColor,
-	ArmorW = 0.8,
-	ArmorH = 0.05,
-	ArmorX = 0.1,
-	ArmorY = 0.1,
-	ArmorBarX = 0.09,
-	ArmorBarY = 0.16,
+	ArmorW = 1,
+	ArmorH = 0.2,
+	ArmorX = 0.0,
+	ArmorY = 0.0,
+	ArmorBarX = 0.0,
+	ArmorBarY = 0.23,
 	ArmorOutline = 0.01,
 	ArmorColor,
 	ArmorOutColor,
@@ -250,17 +254,27 @@ local Health = {
 	
 }
 
+gui_healthx:SetValue(Health.X)
+gui_healthy:SetValue(Health.Y)
+
 local function gui_moveteam_changed()
 	if gui_moveteam:GetValue() == 0 then
 		MyTeam.Move = false
 		Enemy.Move = false
+		Health.Move = false
 		return
 	elseif gui_moveteam:GetValue() == 1 then
 		MyTeam.Move = true
 		Enemy.Move = false
+		Health.Move = false
 	elseif gui_moveteam:GetValue() == 2 then
 		MyTeam.Move = false
 		Enemy.Move = true
+		Health.Move = false
+	elseif gui_moveteam:GetValue() == 3 then
+		MyTeam.Move = false
+		Enemy.Move = false
+		Health.Move = true
 	end
 end
 
@@ -278,6 +292,13 @@ end
 
 local function gui_enemyy_changed()
 	Enemy.Y = gui_enemyy_value
+end
+local function gui_healthx_changed()
+	Health.X = gui_healthx_value
+end
+
+local function gui_healthy_changed()
+	Health.Y = gui_healthy_value
 end
 
 --Handles dragging of containers
@@ -314,6 +335,10 @@ local function moveContainer(Cont)
 		if Cont.TeamName == "Enemy" then
 			gui_enemyx:SetValue(Cont.X)
 			gui_enemyy:SetValue(Cont.Y)
+		end
+		if Cont.TeamName == "Health" then
+			gui_healthx:SetValue(Cont.X)
+			gui_healthy:SetValue(Cont.Y)
 		end
 	end
 end
@@ -374,9 +399,63 @@ local function draw_preview(Cont, space)
 	end
 end
 
+local function draw_health()
+	-- Health Outline
+	local x = Health.X+(Health.W*Health.HealthX)
+	local y = Health.Y+(Health.H*Health.HealthY)
+	local w = x+(Health.W*Health.HealthW)+(Health.W*Health.HealthOutline)
+	local h = y+(Health.H*Health.HealthH)+(Health.W*Health.HealthOutline)
+	draw.Color(Health.HealthOutColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	-- Health Bar
+	local x = Health.X+(Health.W*Health.HealthBarX)+(Health.W*Health.HealthOutline)
+	local y = Health.Y+(Health.H*Health.HealthBarY)+(Health.W*Health.HealthOutline)
+	local w = x+(Health.W*Health.HealthW)-(Health.W*Health.HealthOutline)
+	local h = y+(Health.H*Health.HealthH)-(Health.W*Health.HealthOutline)
+	draw.Color(Health.HealthColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	-- Armor Bar Outline
+	local x = Health.X+(Health.W*Health.ArmorBarX)
+	local y = Health.Y+(Health.H*Health.ArmorBarY)
+	local w = x+(Health.W*Health.ArmorW)+(Health.W*Health.ArmorOutline)
+	local h = y+(Health.H*Health.ArmorH)+(Health.W*Health.ArmorOutline)
+	draw.Color(Health.ArmorOutColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	-- Armor Bar
+	local x = Health.X+(Health.W*Health.ArmorBarX)+(Health.W*Health.ArmorOutline)
+	local y = Health.Y+(Health.H*Health.ArmorBarY)+(Health.W*Health.ArmorOutline)
+	local w = x+(Health.W*Health.ArmorW)-(Health.W*Health.ArmorOutline)
+	local h = y+(Health.H*Health.ArmorH)-(Health.W*Health.ArmorOutline)
+	draw.Color(Health.ArmorColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	if gui_healtharmor:GetValue() then
+		-- Player Health
+		draw.Color(255,255,255,255)
+		draw.SetFont(fntBig)
+		draw.TextShadow(Health.X+(Health.W*Health.HealthBarX)+(Health.W*Health.HealthOutline), Health.Y+(Health.H*Health.HealthBarY)+(Health.W*Health.HealthOutline), "100")
+		-- Player Armor
+		draw.Color(255,255,255,255)
+		draw.SetFont(fntBig)
+		draw.TextShadow(Health.X+(Health.W*Health.ArmorBarX)+(Health.W*Health.ArmorOutline), Health.Y+(Health.H*Health.ArmorBarY)+(Health.W*Health.ArmorOutline), "100")
+	end
+	-- Defuse Kit
+	if gui_defuse:GetValue() then
+		draw.Color(255,255,255,255)
+		draw.SetTexture(iconTexture)
+		draw.FilledRect(Health.X-40, Health.Y, Health.X, Health.Y+40)
+		draw.Color(0,0,0,255)
+		draw.SetTexture(outlineTexture)
+		draw.FilledRect(Health.X-40, Health.Y, Health.X, Health.Y+40)
+		draw.SetTexture(nil)
+	end
+end
+
 local function draw_player(Cont, player, space)
 	draw.Color(0, 0, 0, 64)
-	--draw.FilledRect(Cont.X, Cont.Y, Cont.X+Cont.W, Cont.Y+Cont.H)
 	-- Player Name
 	draw.Color(Cont.TextColor:GetValue())
 	draw.SetFont(fntNml)
@@ -496,7 +575,6 @@ local function updateContainers(Cont)
 end
 
 callbacks.Register("Draw", function()
-	
 	if gui_moveteam_value ~= gui_moveteam:GetValue() then
         gui_moveteam_value = gui_moveteam:GetValue()
         gui_moveteam_changed()
@@ -517,6 +595,14 @@ callbacks.Register("Draw", function()
         gui_enemyy_value = gui_enemyy:GetValue()
         gui_enemyy_changed()
     end
+	if gui_healthx_value ~= gui_healthx:GetValue() then
+        gui_healthx_value = gui_healthx:GetValue()
+        gui_healthx_changed()
+    end
+	if gui_healthy_value ~= gui_healthy:GetValue() then
+        gui_healthy_value = gui_healthy:GetValue()
+        gui_healthy_changed()
+    end
 	if MyTeam.X ~= gui_teamx:GetValue() then
 		gui_teamx_value = gui_teamx:GetValue()
         gui_teamx_changed()
@@ -533,6 +619,14 @@ callbacks.Register("Draw", function()
 		gui_enemyy_value = gui_enemyy:GetValue()
         gui_enemyy_changed()
 	end
+	if Health.X ~= gui_healthx:GetValue() then
+		gui_healthx_value = gui_healthx:GetValue()
+        gui_healthx_changed()
+	end
+	if Health.Y ~= gui_healthy:GetValue() then
+		gui_healthy_value = gui_healthy:GetValue()
+        gui_healthy_changed()
+	end
 	updateContainers(MyTeam)
 	drawContainer(MyTeam)
 	moveContainer(MyTeam)
@@ -540,7 +634,7 @@ callbacks.Register("Draw", function()
 	drawContainer(Enemy)
 	moveContainer(Enemy)
 	updateContainers(Health)
-	drawContainer(Health)
+	draw_health()
 	moveContainer(Health)
 	
 end)
