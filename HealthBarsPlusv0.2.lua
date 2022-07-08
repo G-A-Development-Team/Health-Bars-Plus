@@ -128,6 +128,7 @@ local gui_moveteam_items = {"None", "My Team", "Enemy", "Health"};
 local gui_moveteam = gui.Combobox(gui_group_settings, "", "Move Team/Health Bars", unpack(gui_moveteam_items));
 local gui_defuse = gui.Checkbox(gui_group_settings, "HBP_checkbox_defuse", "Defuse Kit", true);
 local gui_healtharmor = gui.Checkbox(gui_group_settings, "HBP_checkbox_healtharmor", "Health/Armor Counter", true);
+local gui_personal = gui.Checkbox(gui_group_settings, "HBP_checkbox_personal", "Personal Health", true);
 local gui_moveteam_listen = gui_moveteam:GetValue();
 local gui_teamx = gui.Slider(gui_group_locations, "HBP_slider_teamx", "My Team X", 5.0, 0.0, 3000.0, 0.001);
 local gui_teamy = gui.Slider(gui_group_locations, "HBP_slider_teamy", "My Team Y", 5.0, 0.0, 3000.0, 0.001);
@@ -399,7 +400,7 @@ local function draw_preview(Cont, space)
 	end
 end
 
-local function draw_health()
+local function draw_health_preview()
 	-- Health Outline
 	local x = Health.X+(Health.W*Health.HealthX)
 	local y = Health.Y+(Health.H*Health.HealthY)
@@ -451,6 +452,72 @@ local function draw_health()
 		draw.SetTexture(outlineTexture)
 		draw.FilledRect(Health.X-40, Health.Y, Health.X, Health.Y+40)
 		draw.SetTexture(nil)
+	end
+end
+
+local function draw_health(player)
+	if not gui_personal:GetValue() then
+		client.SetConVar("hidehud", 0, true)
+		return
+	end
+	if not player:IsAlive() then
+		client.SetConVar("hidehud", 0, true)
+		return
+	end
+	client.SetConVar("hidehud", 8, true)
+	-- Health Outline
+	local x = Health.X+(Health.W*Health.HealthX)
+	local y = Health.Y+(Health.H*Health.HealthY)
+	local w = x+(Health.W*Health.HealthW)+(Health.W*Health.HealthOutline)
+	local h = y+(Health.H*Health.HealthH)+(Health.W*Health.HealthOutline)
+	draw.Color(Health.HealthOutColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	-- Health Bar
+	local x = Health.X+(Health.W*Health.HealthBarX)+(Health.W*Health.HealthOutline)
+	local y = Health.Y+(Health.H*Health.HealthBarY)+(Health.W*Health.HealthOutline)
+	local w = x+(((Health.W*Health.HealthW)-(Health.W*Health.HealthOutline))/player:GetMaxHealth()*player:GetHealth())
+	local h = y+(Health.H*Health.HealthH)-(Health.W*Health.HealthOutline)
+	draw.Color(Health.HealthColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	-- Armor Bar Outline
+	local x = Health.X+(Health.W*Health.ArmorBarX)
+	local y = Health.Y+(Health.H*Health.ArmorBarY)
+	local w = x+(Health.W*Health.ArmorW)+(Health.W*Health.ArmorOutline)
+	local h = y+(Health.H*Health.ArmorH)+(Health.W*Health.ArmorOutline)
+	draw.Color(Health.ArmorOutColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	-- Armor Bar
+	local x = Health.X+(Health.W*Health.ArmorBarX)+(Health.W*Health.ArmorOutline)
+	local y = Health.Y+(Health.H*Health.ArmorBarY)+(Health.W*Health.ArmorOutline)
+	local w = x+(((Health.W*Health.ArmorW)-(Health.W*Health.ArmorOutline))/100*player:GetProp("m_ArmorValue"))
+	local h = y+(Health.H*Health.ArmorH)-(Health.W*Health.ArmorOutline)
+	draw.Color(Health.ArmorColor:GetValue())
+	draw.FilledRect(x, y, w, h)
+	
+	if gui_healtharmor:GetValue() then
+		-- Player Health
+		draw.Color(255,255,255,255)
+		draw.SetFont(fntBig)
+		draw.TextShadow(Health.X+(Health.W*Health.HealthBarX)+(Health.W*Health.HealthOutline), Health.Y+(Health.H*Health.HealthBarY)+(Health.W*Health.HealthOutline), player:GetHealth())
+		-- Player Armor
+		draw.Color(255,255,255,255)
+		draw.SetFont(fntBig)
+		draw.TextShadow(Health.X+(Health.W*Health.ArmorBarX)+(Health.W*Health.ArmorOutline), Health.Y+(Health.H*Health.ArmorBarY)+(Health.W*Health.ArmorOutline), player:GetProp("m_ArmorValue"))
+	end
+	-- Defuse Kit
+	if gui_defuse:GetValue() then
+		if player:GetPropBool("m_bHasDefuser") then
+			draw.Color(255,255,255,255)
+			draw.SetTexture(iconTexture)
+			draw.FilledRect(Health.X-40, Health.Y, Health.X, Health.Y+40)
+			draw.Color(0,0,0,255)
+			draw.SetTexture(outlineTexture)
+			draw.FilledRect(Health.X-40, Health.Y, Health.X, Health.Y+40)
+			draw.SetTexture(nil)
+		end
 	end
 end
 
@@ -519,6 +586,7 @@ local function drawContainer(Cont)
 			   draw_preview(Cont, Cont.H*Cont.Space*var)
 			end
 		end
+		draw_health_preview()
 		return
 	end
 	local countnum = 0
@@ -546,7 +614,10 @@ local function drawContainer(Cont)
 					if player:GetTeamNumber() == lp_team and player:GetTeamNumber() ~= 1 then
 						draw_player(Cont, player, Cont.H*Cont.Space*countnum)
 						countnum = countnum + 1
-						
+						if player:GetIndex() == lp:GetIndex() then
+							draw_health(player)
+							
+						end
 					end
 				end
 			end
@@ -561,7 +632,7 @@ local function drawContainer(Cont)
 			end
         --end
     end
-	Cont.Players = countnum
+	
 end
 
 
@@ -634,7 +705,7 @@ callbacks.Register("Draw", function()
 	drawContainer(Enemy)
 	moveContainer(Enemy)
 	updateContainers(Health)
-	draw_health()
+	--draw_health()
 	moveContainer(Health)
 	
 end)
