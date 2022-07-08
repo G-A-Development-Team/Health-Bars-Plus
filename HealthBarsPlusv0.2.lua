@@ -123,8 +123,9 @@ local gui_healthoutline = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_hea
 local gui_healthcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_healthcolor", "Health Color", 255, 0, 0, 255)
 local gui_armoroutline = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_armoroutline", "Armor Outline Color", 0, 0, 0, 255)
 local gui_armorcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_armorcolor", "Armor Color", 13, 131, 255)
+local gui_preview = gui.Checkbox(gui_group_settings, "HBP_checkbox_preview", "Preview", false);
 local gui_moveteam_items = {"None", "My Team", "Enemy"};
-local gui_moveteam = gui.Combobox(gui_group_settings, "HBP_combobox_movecontainer", "Move Team/Health Bars", unpack(gui_moveteam_items));
+local gui_moveteam = gui.Combobox(gui_group_settings, "", "Move Team/Health Bars", unpack(gui_moveteam_items));
 local gui_defuse = gui.Checkbox(gui_group_settings, "HBP_checkbox_defuse", "Defuse Kit", true);
 local gui_healtharmor = gui.Checkbox(gui_group_settings, "HBP_checkbox_healtharmor", "Health/Armor Counter", true);
 local gui_moveteam_listen = gui_moveteam:GetValue();
@@ -132,22 +133,26 @@ local gui_teamx = gui.Slider(gui_group_locations, "HBP_slider_teamx", "My Team X
 local gui_teamy = gui.Slider(gui_group_locations, "HBP_slider_teamy", "My Team Y", 5.0, 0.0, 3000.0, 0.001);
 local gui_enemyx = gui.Slider(gui_group_locations, "HBP_slider_enemyx", "Enemy X", 5.0, 0.0, 3000.0, 0.001);
 local gui_enemyy = gui.Slider(gui_group_locations, "HBP_slider_enemyy", "Enemy Y", 5.0, 0.0, 3000.0, 0.001);
+local gui_teamx_value = gui_teamx:GetValue()
+local gui_teamy_value = gui_teamy:GetValue()
+local gui_enemyx_value = gui_enemyx:GetValue()
+local gui_enemyy_value = gui_enemyy:GetValue()
 
---Fonts
+-- Fonts
 local fntSml = draw.CreateFont("Bahnschrift", 18)
 local fntNml = draw.CreateFont("Bahnschrift", 20)
 local fntBig = draw.CreateFont("Bahnschrift", 30)
 
---Screen dimensions
+-- Screen dimensions
 local screenW, screenH = draw.GetScreenSize()
 
---Container
+-- Container
 local MyTeam = {
 	TeamName = "MyTeam",
 	W = 175,
 	H = 300,
-	X = 1000,
-	Y = 300,
+	X = 40,
+	Y = 0,
 	HealthW = 1.0,
 	HealthH = 0.05,
 	HealthX = 0.0,
@@ -181,7 +186,7 @@ local Enemy = {
 	TeamName = "Enemy",
 	W = 150,
 	H = 300,
-	X = 160,
+	X = 190,
 	Y = 0,
 	HealthW = 1.0,
 	HealthH = 0.05,
@@ -246,7 +251,6 @@ local Health = {
 }
 
 local function gui_moveteam_changed()
-	print(gui_moveteam_listen)
 	if gui_moveteam:GetValue() == 0 then
 		MyTeam.Move = false
 		Enemy.Move = false
@@ -259,6 +263,23 @@ local function gui_moveteam_changed()
 		Enemy.Move = true
 	end
 end
+
+local function gui_teamx_changed()
+	MyTeam.X = gui_teamx_value
+end
+
+local function gui_teamy_changed()
+	MyTeam.Y = gui_teamy_value
+end
+
+local function gui_enemyx_changed()
+	Enemy.X = gui_enemyx_value
+end
+
+local function gui_enemyy_changed()
+	Enemy.Y = gui_enemyy_value
+end
+
 --Handles dragging of containers
 local function moveContainer(Cont)
 	if Cont.Move then	
@@ -286,17 +307,71 @@ local function moveContainer(Cont)
 		else
 			shouldDrag = false;
 		end
+		if Cont.TeamName == "MyTeam" then
+			gui_teamx:SetValue(Cont.X)
+			gui_teamy:SetValue(Cont.Y)
+		end
+		if Cont.TeamName == "Enemy" then
+			gui_enemyx:SetValue(Cont.X)
+			gui_enemyy:SetValue(Cont.Y)
+		end
 	end
-	if Cont.TeamName == "MyTeam" then
-		gui_teamx:SetValue(Cont.X)
-		gui_teamy:SetValue(Cont.Y)
+end
+
+local function draw_preview(Cont, space)
+	-- Player Name
+	draw.Color(0, 0, 0, 64)
+	draw.Color(Cont.TextColor:GetValue())
+	draw.SetFont(fntNml)
+	draw.TextShadow(Cont.X+(Cont.W*Cont.HealthX), Cont.Y+space+(Cont.H*Cont.HealthY), "John Doe")
+	draw.Color(Cont.HealthOutColor:GetValue())
+	local x = Cont.X+(Cont.W*Cont.HealthBarX)
+	local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)
+	local w = x+(Cont.W*Cont.HealthW)+(Cont.W*Cont.HealthOutline)
+	local h = y+(Cont.H*Cont.HealthH)+(Cont.W*Cont.HealthOutline)
+	-- Health Bar Outline
+	draw.FilledRect(x, y, w, h)
+	draw.Color(Cont.HealthColor:GetValue())
+	local x = Cont.X+(Cont.W*Cont.HealthBarX)+(Cont.W*Cont.HealthOutline)
+	local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)+(Cont.W*Cont.HealthOutline)
+	local w = x+(Cont.W*Cont.HealthW)-(Cont.W*Cont.HealthOutline)
+	local h = y+(Cont.H*Cont.HealthH)-(Cont.W*Cont.HealthOutline)
+	-- Health Bar
+	draw.FilledRect(x, y, w, h)
+	draw.Color(Cont.ArmorOutColor:GetValue())
+	local x = Cont.X+(Cont.W*Cont.ArmorBarX)
+	local y = Cont.Y+space+(Cont.H*Cont.ArmorBarY)
+	local w = x+(Cont.W*Cont.ArmorW)+(Cont.W*Cont.ArmorOutline)
+	local h = y+(Cont.H*Cont.ArmorH)+(Cont.W*Cont.ArmorOutline)
+	-- Armor Bar Outline
+	draw.FilledRect(x, y, w, h)
+	draw.Color(Cont.ArmorColor:GetValue())
+	local x = Cont.X+(Cont.W*Cont.ArmorBarX)+(Cont.W*Cont.ArmorOutline)
+	local y = Cont.Y+space+(Cont.H*Cont.ArmorBarY)+(Cont.W*Cont.ArmorOutline)
+	local w = x+(Cont.W*Cont.ArmorW)-(Cont.W*Cont.ArmorOutline)
+	local h = y+(Cont.H*Cont.ArmorH)-(Cont.W*Cont.ArmorOutline)
+	-- Armor Bar
+	draw.FilledRect(x, y, w, h)
+	if gui_healtharmor:GetValue() then
+		-- Player Health
+		draw.Color(255,255,255,255)
+		draw.SetFont(fntSml)
+		draw.TextShadow(Cont.X+(Cont.W*Cont.HealthBarX)+(Cont.W*Cont.HealthOutline), Cont.Y+space+(Cont.H*Cont.HealthBarY)+(Cont.W*Cont.HealthOutline), "100")
+		-- Player Armor
+		draw.Color(255,255,255,255)
+		draw.SetFont(fntSml)
+		draw.TextShadow(Cont.X+(Cont.W*Cont.ArmorBarX)+(Cont.W*Cont.ArmorOutline), Cont.Y+space+(Cont.H*Cont.ArmorBarY)+(Cont.W*Cont.ArmorOutline), "100")
 	end
-	
-	if Cont.TeamName == "Enemy" then
-		gui_enemyx:SetValue(Cont.X)
-		gui_enemyy:SetValue(Cont.Y)
+	-- Defuse Kit
+	if gui_defuse:GetValue() then
+		draw.Color(255,255,255,255)
+		draw.SetTexture(iconTexture)
+		draw.FilledRect(Cont.X-20, Cont.Y+space, Cont.X, Cont.Y+space+20)
+		draw.Color(0,0,0,255)
+		draw.SetTexture(outlineTexture)
+		draw.FilledRect(Cont.X-20, Cont.Y+space, Cont.X, Cont.Y+space+20)
+		draw.SetTexture(nil)
 	end
-	
 end
 
 local function draw_player(Cont, player, space)
@@ -334,7 +409,6 @@ local function draw_player(Cont, player, space)
 	local h = y+(Cont.H*Cont.ArmorH)-(Cont.W*Cont.ArmorOutline)
 	-- Armor Bar
 	draw.FilledRect(x, y, w, h)
-	
 	if gui_healtharmor:GetValue() then
 		-- Player Health
 		draw.Color(255,255,255,255)
@@ -345,7 +419,6 @@ local function draw_player(Cont, player, space)
 		draw.SetFont(fntSml)
 		draw.TextShadow(Cont.X+(Cont.W*Cont.ArmorBarX)+(Cont.W*Cont.ArmorOutline), Cont.Y+space+(Cont.H*Cont.ArmorBarY)+(Cont.W*Cont.ArmorOutline), player:GetProp("m_ArmorValue"))
 	end
-	
 	if gui_defuse:GetValue() then
 		if player:GetPropBool("m_bHasDefuser") then
 			draw.Color(255,255,255,255)
@@ -361,6 +434,14 @@ end
 
 --Handles drawing of containers
 local function drawContainer(Cont)
+	if gui_preview:GetValue() then
+		if Cont.TeamName == "MyTeam" or Cont.TeamName == "Enemy" then
+			for var=0,9 do
+			   draw_preview(Cont, Cont.H*Cont.Space*var)
+			end
+		end
+		return
+	end
 	local countnum = 0
 	--Define localplayer
 	local lp = entities.GetLocalPlayer() 
@@ -380,8 +461,6 @@ local function drawContainer(Cont)
         local player = players[i]
         --Check if player is alive
         --if player:IsAlive() then
-			--print(player:GetName())
-			--print(Cont.TeamName)
 			if Cont.TeamName == "MyTeam" then
 				--Get players team number if equals to ours and make sure they arent in spectator mode
 				if player:GetName() ~= "GOTV" then
@@ -409,26 +488,51 @@ end
 
 
 local function updateContainers(Cont)
-		Cont.TextColor = gui_textcolor
-		Cont.HealthOutColor = gui_healthoutline
-		Cont.HealthColor = gui_healthcolor
-		Cont.ArmorOutColor = gui_armoroutline
-		Cont.ArmorColor = gui_armorcolor
+	Cont.TextColor = gui_textcolor
+	Cont.HealthOutColor = gui_healthoutline
+	Cont.HealthColor = gui_healthcolor
+	Cont.ArmorOutColor = gui_armoroutline
+	Cont.ArmorColor = gui_armorcolor
 end
 
-
---local HealthW = HealthBoxW/player:GetMaxHealth()
---local ArmorW = ArmorBoxW/100
---local m_ArmorValue = player:GetProp("m_ArmorValue")
-
-
-
 callbacks.Register("Draw", function()
-
-	if gui_moveteam_listen ~= gui_moveteam:GetValue() then
-        gui_moveteam_listen = gui_moveteam:GetValue();
-        gui_moveteam_changed();
+	
+	if gui_moveteam_value ~= gui_moveteam:GetValue() then
+        gui_moveteam_value = gui_moveteam:GetValue()
+        gui_moveteam_changed()
     end
+	if gui_teamx_value ~= gui_teamx:GetValue() then
+        gui_teamx_value = gui_teamx:GetValue()
+        gui_teamx_changed()
+    end
+	if gui_teamy_value ~= gui_teamy:GetValue() then
+        gui_teamy_value = gui_teamy:GetValue()
+        gui_teamy_changed()
+    end
+	if gui_enemyx_value ~= gui_enemyx:GetValue() then
+        gui_enemyx_value = gui_enemyx:GetValue()
+        gui_enemyx_changed()
+    end
+	if gui_enemyy_value ~= gui_enemyy:GetValue() then
+        gui_enemyy_value = gui_enemyy:GetValue()
+        gui_enemyy_changed()
+    end
+	if MyTeam.X ~= gui_teamx:GetValue() then
+		gui_teamx_value = gui_teamx:GetValue()
+        gui_teamx_changed()
+	end
+	if MyTeam.Y ~= gui_teamy:GetValue() then
+		gui_teamy_value = gui_teamy:GetValue()
+        gui_teamy_changed()
+	end
+	if Enemy.X ~= gui_enemyx:GetValue() then
+		gui_enemyx_value = gui_enemyx:GetValue()
+        gui_enemyx_changed()
+	end
+	if Enemy.Y ~= gui_enemyy:GetValue() then
+		gui_enemyy_value = gui_enemyy:GetValue()
+        gui_enemyy_changed()
+	end
 	updateContainers(MyTeam)
 	drawContainer(MyTeam)
 	moveContainer(MyTeam)
