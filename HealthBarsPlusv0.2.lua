@@ -548,6 +548,8 @@ local function draw_player(Cont, player, space)
 	else
 		draw.Color(Cont.TextColor:GetValue())
 	end
+	draw.SetFont(fntNml)
+	draw.TextShadow(Cont.X+(Cont.W*Cont.HealthX), Cont.Y+space+(Cont.H*Cont.HealthY), player:GetName())
 	if gui_color_ribbon:GetValue() then
 		draw.Color(color_codes(color_id))
 		local x = Cont.X+(Cont.W*Cont.HealthBarX)-(Cont.W*0.03)
@@ -556,8 +558,6 @@ local function draw_player(Cont, player, space)
 		local h = y+(Cont.H*Cont.HealthH)+(Cont.W*Cont.HealthOutline)+(Cont.H*Cont.ArmorH)+(Cont.W*Cont.ArmorOutline)
 		draw.FilledRect(x,y,w,h) 
 	end
-	draw.SetFont(fntNml)
-	draw.TextShadow(Cont.X+(Cont.W*Cont.HealthX), Cont.Y+space+(Cont.H*Cont.HealthY), player:GetName())
 	draw.Color(Cont.HealthOutColor:GetValue())
 	local x = Cont.X+(Cont.W*Cont.HealthBarX)
 	local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)
