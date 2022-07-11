@@ -1,16 +1,14 @@
 -----------------------------------------------
----------Health Bars Plus v0.2-----------------
----------    Created By:    -------------------
----------  GameChampCrafted  ------------------
--------- (Aimware - CarterPoe) ----------------
----------   Date: 7/6/2022   ------------------
+-------- Health Bars Plus v0.2   --------------
+--------     Created By:         --------------
+--------      Agentsix1          --------------
+--------    Date: 7/6/2022       --------------
 -----------------------------------------------
---------- Tested By:         ------------------
---------- Agentsix1          ------------------
+--------  Tested By:             --------------
+--------  CarterPoe              --------------
 -----------------------------------------------
---------- v0.2 Revision By:  ------------------
---------- Agentsix1          ------------------
---------- CarterPoe          ------------------
+--------  Orginally Created By:  --------------
+--------  CarterPoe              --------------
 -----------------------------------------------
 --
 -- This is a product of the G&A Development Team
@@ -298,7 +296,7 @@ local function color_codes(id)
 	colors[0] = { 199, 197, 34, 255 } -- Yellow
 	colors[1] = { 128, 18, 192, 255 } -- Purple
 	colors[2] = { 0, 144, 77, 255 }   -- Green
-	colors[3] = { 72, 134, 204, 255 }   -- Blue
+	colors[3] = { 72, 134, 204, 255 } -- Blue
 	colors[4] = { 204, 123, 27, 255 } -- Orange
 	return unpack(colors[id])
 end
@@ -714,7 +712,6 @@ local function drawContainer(Cont)
         --Define player for easy access
         local player = players[i]
         --Check if player is alive
-        --if player:IsAlive() then
 			if Cont.TeamName == "MyTeam" then
 				--Get players team number if equals to ours and make sure they arent in spectator mode
 				if player:GetName() ~= "GOTV" then
@@ -812,6 +809,5 @@ callbacks.Register("Draw", function()
 	moveContainer(MyTeam)
 	drawContainer(Enemy)
 	moveContainer(Enemy)
-	--draw_health()
 	moveContainer(Health)
 end)
