@@ -117,7 +117,7 @@ local gui_tab = gui.Tab(gui_ref, "HBP", "Health Bars Plus")
 --Groupbox for HBPL colors
 local gui_group_colors = gui.Groupbox(gui_tab, "Colors", 16, 16, 287.5, 50);
 local gui_group_settings = gui.Groupbox(gui_tab, "Settings", 319.5, 16, 287.5, 50);
-local gui_group_locations = gui.Groupbox(gui_tab, "DO NOT CHANGE", 16, 250, 287.5, 50);
+local gui_group_locations = gui.Groupbox(gui_tab, "DO NOT CHANGE", 16, 360, 287.5, 50);
 local gui_textcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_textcolor", "Text Color", 246, 228, 0, 255)
 local gui_healthoutline = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_healthoutline", "Health Outline Color", 0, 0, 0, 255)
 local gui_healthcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_healthcolor", "Health Color", 255, 0, 0, 255)
@@ -129,6 +129,10 @@ local gui_moveteam = gui.Combobox(gui_group_settings, "", "Move Team/Health Bars
 local gui_defuse = gui.Checkbox(gui_group_settings, "HBP_checkbox_defuse", "Defuse Kit", true);
 local gui_healtharmor = gui.Checkbox(gui_group_settings, "HBP_checkbox_healtharmor", "Health/Armor Counter", true);
 local gui_personal = gui.Checkbox(gui_group_settings, "HBP_checkbox_personal", "Personal Health", true);
+local gui_color_ribbon = gui.Checkbox(gui_group_colors, "HBP_checkbox_ribbon_color", "Player Color Ribbon", false);
+local gui_color_names = gui.Checkbox(gui_group_colors, "HBP_checkbox_names_color", "Player Names are Player Color", false);
+local gui_color_health = gui.Checkbox(gui_group_colors, "HBP_checkbox_health_color", "Player Health are Player Color", false);
+local gui_color_armor = gui.Checkbox(gui_group_colors, "HBP_checkbox_armor_color", "Player Armor are Player Color", false);
 local gui_moveteam_listen = gui_moveteam:GetValue();
 local gui_teamx = gui.Slider(gui_group_locations, "HBP_slider_teamx", "My Team X", 5.0, 0.0, 3000.0, 0.001);
 local gui_teamy = gui.Slider(gui_group_locations, "HBP_slider_teamy", "My Team Y", 5.0, 0.0, 3000.0, 0.001);
@@ -257,6 +261,17 @@ local Health = {
 
 gui_healthx:SetValue(Health.X)
 gui_healthy:SetValue(Health.Y)
+
+
+local function color_codes(id)
+	local colors = {}
+	colors[0] = { 199, 197, 34, 255 } -- Yellow
+	colors[1] = { 128, 18, 192, 255 } -- Purple
+	colors[2] = { 0, 144, 77, 255 }   -- Green
+	colors[3] = { 72, 134, 204, 255 }   -- Blue
+	colors[4] = { 204, 123, 27, 255 } -- Orange
+	return unpack(colors[id])
+end
 
 local function gui_moveteam_changed()
 	if gui_moveteam:GetValue() == 0 then
@@ -521,10 +536,25 @@ local function draw_health(player)
 	end
 end
 
+
+
 local function draw_player(Cont, player, space)
 	draw.Color(0, 0, 0, 64)
+	local color_id = entities.GetPlayerResources():GetPropInt("m_iCompTeammateColor", player:GetIndex())
 	-- Player Name
-	draw.Color(Cont.TextColor:GetValue())
+	if gui_color_names:GetValue() then
+		draw.Color(color_codes(color_id))
+	else
+		draw.Color(Cont.TextColor:GetValue())
+	end
+	if gui_color_ribbon:GetValue() then
+		draw.Color(color_codes(1))
+		local x = Cont.X+(Cont.W*Cont.HealthBarX)-(Cont.W*0.03)
+		local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)
+		local w = x+(Cont.W*0.03)
+		local h = y+(Cont.H*Cont.HealthH)+(Cont.W*Cont.HealthOutline)+(Cont.H*Cont.ArmorH)+(Cont.W*Cont.ArmorOutline)
+		draw.FilledRect(x,y,w,h) 
+	end
 	draw.SetFont(fntNml)
 	draw.TextShadow(Cont.X+(Cont.W*Cont.HealthX), Cont.Y+space+(Cont.H*Cont.HealthY), player:GetName())
 	draw.Color(Cont.HealthOutColor:GetValue())
@@ -534,7 +564,11 @@ local function draw_player(Cont, player, space)
 	local h = y+(Cont.H*Cont.HealthH)+(Cont.W*Cont.HealthOutline)
 	-- Health Bar Outline
 	draw.FilledRect(x, y, w, h)
-	draw.Color(Cont.HealthColor:GetValue())
+	if gui_color_health:GetValue() then
+		draw.Color(color_codes(color_id))
+	else
+		draw.Color(Cont.HealthColor:GetValue())
+	end	
 	local x = Cont.X+(Cont.W*Cont.HealthBarX)+(Cont.W*Cont.HealthOutline)
 	local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)+(Cont.W*Cont.HealthOutline)
 	local w = x+(((Cont.W*Cont.HealthW)-(Cont.W*Cont.HealthOutline))/player:GetMaxHealth()*player:GetHealth())
@@ -548,7 +582,11 @@ local function draw_player(Cont, player, space)
 	local h = y+(Cont.H*Cont.ArmorH)+(Cont.W*Cont.ArmorOutline)
 	-- Armor Bar Outline
 	draw.FilledRect(x, y, w, h)
-	draw.Color(Cont.ArmorColor:GetValue())
+	if gui_color_armor:GetValue() then
+		draw.Color(color_codes(color_id))
+	else
+		draw.Color(Cont.ArmorColor:GetValue())
+	end	
 	local x = Cont.X+(Cont.W*Cont.ArmorBarX)+(Cont.W*Cont.ArmorOutline)
 	local y = Cont.Y+space+(Cont.H*Cont.ArmorBarY)+(Cont.W*Cont.ArmorOutline)
 	local w = x+(((Cont.W*Cont.ArmorW)-(Cont.W*Cont.ArmorOutline))/100*player:GetProp("m_ArmorValue"))
