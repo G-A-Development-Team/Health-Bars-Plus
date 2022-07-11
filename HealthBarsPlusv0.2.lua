@@ -117,7 +117,7 @@ local gui_tab = gui.Tab(gui_ref, "HBP", "Health Bars Plus")
 --Groupbox for HBPL colors
 local gui_group_colors = gui.Groupbox(gui_tab, "Colors", 16, 16, 287.5, 50);
 local gui_group_settings = gui.Groupbox(gui_tab, "Settings", 319.5, 16, 287.5, 50);
-local gui_group_locations = gui.Groupbox(gui_tab, "DO NOT CHANGE", 16, 360, 287.5, 50);
+local gui_group_locations = gui.Groupbox(gui_tab, "DO NOT CHANGE", 16, 445, 287.5, 50);
 local gui_textcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_textcolor", "Text Color", 246, 228, 0, 255)
 local gui_healthoutline = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_healthoutline", "Health Outline Color", 0, 0, 0, 255)
 local gui_healthcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_healthcolor", "Health Color", 255, 0, 0, 255)
@@ -129,6 +129,7 @@ local gui_moveteam = gui.Combobox(gui_group_settings, "", "Move Team/Health Bars
 local gui_defuse = gui.Checkbox(gui_group_settings, "HBP_checkbox_defuse", "Defuse Kit", true);
 local gui_healtharmor = gui.Checkbox(gui_group_settings, "HBP_checkbox_healtharmor", "Health/Armor Counter", true);
 local gui_personal = gui.Checkbox(gui_group_settings, "HBP_checkbox_personal", "Personal Health", true);
+local gui_transparency = gui.Slider(gui_group_colors, "HBP_slider_transparency", "Transparency", 255.0, 0.0, 255.0, 1);
 local gui_color_ribbon = gui.Checkbox(gui_group_colors, "HBP_checkbox_ribbon_color", "Player Color Ribbon", false);
 local gui_color_names = gui.Checkbox(gui_group_colors, "HBP_checkbox_names_color", "Player Names are Player Color", false);
 local gui_color_health = gui.Checkbox(gui_group_colors, "HBP_checkbox_health_color", "Player Health are Player Color", false);
