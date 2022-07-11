@@ -109,7 +109,7 @@ local outlineTexture = draw.CreateTexture(outlineRGBA, outlineW, outlineH)
 --------------------------
 
 local bomb_svg = [[
-			<svg width="32" height="32"><title>Layer 1</title><path id="svg_1" d="M29.539,6.054c-0.41-2.959-1.966-4.172-2.81-4.618c-0.548-0.291-2.172-0.733-3.613-0.733
+			<svg width="32" height="32"><title>Layer 1</title><path fill="#ffffff" id="svg_1" d="M29.539,6.054c-0.41-2.959-1.966-4.172-2.81-4.618c-0.548-0.291-2.172-0.733-3.613-0.733
 			c-2.062,0-3.73,0.313-4.083,0.41c-1.309,0.356-1.874,0.821-1.916,1.295c-0.05,0.555-0.014,0.715-0.014,0.715l0.621,0.011
 			c0-0.846,0.252-0.964,0.635-1.122c0.649-0.269,1.388-0.595,4.203-0.675c2.973-0.083,4.161,0.651,4.784,1.31
 			c1.639,1.73,1.755,3.499,1.837,9.158c0.079,5.444-0.408,6.684-0.688,7.61c-0.309,1.026-0.915,1.688-1.89,1.785
@@ -149,17 +149,18 @@ local gui_healthoutline = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_hea
 local gui_healthcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_healthcolor", "Health Color", 255, 0, 0, 255)
 local gui_armoroutline = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_armoroutline", "Armor Outline Color", 0, 0, 0, 255)
 local gui_armorcolor = gui.ColorPicker(gui_group_colors, "HBP_colorpicker_armorcolor", "Armor Color", 13, 131, 255)
-local gui_preview = gui.Checkbox(gui_group_settings, "HBP_checkbox_preview", "Preview", false);
-local gui_moveteam_items = {"None", "My Team", "Enemy", "Health"};
-local gui_moveteam = gui.Combobox(gui_group_settings, "", "Move Team/Health Bars", unpack(gui_moveteam_items));
-local gui_defuse = gui.Checkbox(gui_group_settings, "HBP_checkbox_defuse", "Defuse Kit", true);
-local gui_healtharmor = gui.Checkbox(gui_group_settings, "HBP_checkbox_healtharmor", "Health/Armor Counter", true);
-local gui_personal = gui.Checkbox(gui_group_settings, "HBP_checkbox_personal", "Personal Health", true);
 local gui_transparency = gui.Slider(gui_group_colors, "HBP_slider_transparency", "Transparency", 255.0, 0.0, 255.0, 1);
 local gui_color_ribbon = gui.Checkbox(gui_group_colors, "HBP_checkbox_ribbon_color", "Player Color Ribbon", false);
 local gui_color_names = gui.Checkbox(gui_group_colors, "HBP_checkbox_names_color", "Player Names are Player Color", false);
 local gui_color_health = gui.Checkbox(gui_group_colors, "HBP_checkbox_health_color", "Player Health are Player Color", false);
 local gui_color_armor = gui.Checkbox(gui_group_colors, "HBP_checkbox_armor_color", "Player Armor are Player Color", false);
+local gui_preview = gui.Checkbox(gui_group_settings, "HBP_checkbox_preview", "Preview", false);
+local gui_moveteam_items = {"None", "My Team", "Enemy", "Health"};
+local gui_moveteam = gui.Combobox(gui_group_settings, "", "Move Team/Health Bars", unpack(gui_moveteam_items));
+local gui_defuse = gui.Checkbox(gui_group_settings, "HBP_checkbox_defuse", "Defuse Kit", true);
+local gui_c4 = gui.Checkbox(gui_group_settings, "HBP_checkbox_c4", "Bomb/C4", true);
+local gui_healtharmor = gui.Checkbox(gui_group_settings, "HBP_checkbox_healtharmor", "Health/Armor Counter", true);
+local gui_personal = gui.Checkbox(gui_group_settings, "HBP_checkbox_personal", "Personal Health", true);
 local gui_moveteam_listen = gui_moveteam:GetValue();
 local gui_teamx = gui.Slider(gui_group_locations, "HBP_slider_teamx", "My Team X", 5.0, 0.0, 3000.0, 0.001);
 local gui_teamy = gui.Slider(gui_group_locations, "HBP_slider_teamy", "My Team Y", 5.0, 0.0, 3000.0, 0.001);
@@ -291,7 +292,9 @@ gui_healthy:SetValue(Health.Y)
 
 
 local function color_codes(id)
+	if type(id) ~= "number" then return end
 	local colors = {}
+	if id < 0 then id = 0 end
 	colors[0] = { 199, 197, 34, 255 } -- Yellow
 	colors[1] = { 128, 18, 192, 255 } -- Purple
 	colors[2] = { 0, 144, 77, 255 }   -- Green
@@ -388,10 +391,21 @@ end
 
 local function draw_preview(Cont, space)
 	-- Player Name
-	draw.Color(0, 0, 0, 64)
-	draw.Color(Cont.TextColor:GetValue())
+	if gui_color_names:GetValue() then
+		draw.Color(color_codes(-1))
+	else
+		draw.Color(Cont.TextColor:GetValue())
+	end
 	draw.SetFont(fntNml)
 	draw.TextShadow(Cont.X+(Cont.W*Cont.HealthX), Cont.Y+space+(Cont.H*Cont.HealthY), "John Doe")
+	if gui_color_ribbon:GetValue() then
+		draw.Color(color_codes(-1))
+		local x = Cont.X+(Cont.W*Cont.HealthBarX)-(Cont.W*0.03)
+		local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)
+		local w = x+(Cont.W*0.03)
+		local h = y+(Cont.H*Cont.HealthH)+(Cont.W*Cont.HealthOutline)+(Cont.H*Cont.ArmorH)+(Cont.W*Cont.ArmorOutline)+(Cont.H*0.0008)
+		draw.FilledRect(x,y,w,h) 
+	end
 	draw.Color(Cont.HealthOutColor:GetValue())
 	local x = Cont.X+(Cont.W*Cont.HealthBarX)
 	local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)
@@ -399,7 +413,11 @@ local function draw_preview(Cont, space)
 	local h = y+(Cont.H*Cont.HealthH)+(Cont.W*Cont.HealthOutline)
 	-- Health Bar Outline
 	draw.FilledRect(x, y, w, h)
-	draw.Color(Cont.HealthColor:GetValue())
+	if gui_color_health:GetValue() then
+		draw.Color(color_codes(-1))
+	else
+		draw.Color(Cont.HealthColor:GetValue())
+	end
 	local x = Cont.X+(Cont.W*Cont.HealthBarX)+(Cont.W*Cont.HealthOutline)
 	local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)+(Cont.W*Cont.HealthOutline)
 	local w = x+(Cont.W*Cont.HealthW)-(Cont.W*Cont.HealthOutline)
@@ -413,7 +431,11 @@ local function draw_preview(Cont, space)
 	local h = y+(Cont.H*Cont.ArmorH)+(Cont.W*Cont.ArmorOutline)
 	-- Armor Bar Outline
 	draw.FilledRect(x, y, w, h)
-	draw.Color(Cont.ArmorColor:GetValue())
+	if gui_color_armor:GetValue() then
+		draw.Color(color_codes(-1))
+	else
+		draw.Color(Cont.ArmorColor:GetValue())
+	end
 	local x = Cont.X+(Cont.W*Cont.ArmorBarX)+(Cont.W*Cont.ArmorOutline)
 	local y = Cont.Y+space+(Cont.H*Cont.ArmorBarY)+(Cont.W*Cont.ArmorOutline)
 	local w = x+(Cont.W*Cont.ArmorW)-(Cont.W*Cont.ArmorOutline)
@@ -434,10 +456,10 @@ local function draw_preview(Cont, space)
 	if gui_defuse:GetValue() then
 		draw.Color(255,255,255,255)
 		draw.SetTexture(iconTexture)
-		draw.FilledRect(Cont.X-20, Cont.Y+space, Cont.X, Cont.Y+space+20)
+		draw.FilledRect(Cont.X-24, Cont.Y+space, Cont.X, Cont.Y+space+20)
 		draw.Color(0,0,0,255)
 		draw.SetTexture(outlineTexture)
-		draw.FilledRect(Cont.X-20, Cont.Y+space, Cont.X, Cont.Y+space+20)
+		draw.FilledRect(Cont.X-24, Cont.Y+space, Cont.X, Cont.Y+space+20)
 		draw.SetTexture(nil)
 	end
 end
@@ -549,6 +571,16 @@ local function draw_health(player)
 		draw.SetFont(fntBig)
 		draw.TextShadow(Health.X+(Health.W*Health.ArmorBarX)+(Health.W*Health.ArmorOutline), Health.Y+(Health.H*Health.ArmorBarY)+(Health.W*Health.ArmorOutline), player:GetProp("m_ArmorValue"))
 	end
+	
+	if gui_c4:GetValue() then
+		if player:GetIndex() == entities.GetPlayerResources():GetPropInt("m_iPlayerC4") then
+			draw.Color(255,255,255,255)
+			draw.SetTexture(bomb_texture)
+			draw.FilledRect(Cont.X-40, Cont.Y+space, Cont.X, Cont.Y+space+40)
+			draw.SetTexture(nil)
+		end	
+	end
+	
 	-- Defuse Kit
 	if gui_defuse:GetValue() then
 		if player:GetPropBool("m_bHasDefuser") then
@@ -565,7 +597,7 @@ end
 
 
 
-local function draw_player(Cont, player, space)
+local function draw_player(Cont, player, space, id)
 	draw.Color(0, 0, 0, 64)
 	local color_id = entities.GetPlayerResources():GetPropInt("m_iCompTeammateColor", player:GetIndex())
 	-- Player Name
@@ -592,7 +624,7 @@ local function draw_player(Cont, player, space)
 	-- Health Bar Outline
 	draw.FilledRect(x, y, w, h)
 	if gui_color_health:GetValue() then
-		draw.Color(color_codes(color_id))
+		draw.Color(color_out)
 	else
 		draw.Color(Cont.HealthColor:GetValue())
 	end	
@@ -610,7 +642,7 @@ local function draw_player(Cont, player, space)
 	-- Armor Bar Outline
 	draw.FilledRect(x, y, w, h)
 	if gui_color_armor:GetValue() then
-		draw.Color(color_codes(color_id))
+		draw.Color(color_out)
 	else
 		draw.Color(Cont.ArmorColor:GetValue())
 	end	
@@ -631,14 +663,23 @@ local function draw_player(Cont, player, space)
 		draw.TextShadow(Cont.X+(Cont.W*Cont.ArmorBarX)+(Cont.W*Cont.ArmorOutline), Cont.Y+space+(Cont.H*Cont.ArmorBarY)+(Cont.W*Cont.ArmorOutline), player:GetProp("m_ArmorValue"))
 	end
 	
+	if gui_c4:GetValue() then
+		if player:GetIndex() == entities.GetPlayerResources():GetPropInt("m_iPlayerC4") then
+			draw.Color(255,255,255,255)
+			draw.SetTexture(bomb_texture)
+			draw.FilledRect(Cont.X-24, Cont.Y+space, Cont.X, Cont.Y+space+20)
+			draw.SetTexture(nil)
+		end	
+	end
+	
 	if gui_defuse:GetValue() then
 		if player:GetPropBool("m_bHasDefuser") then
 			draw.Color(255,255,255,255)
 			draw.SetTexture(iconTexture)
-			draw.FilledRect(Cont.X-20, Cont.Y+space, Cont.X, Cont.Y+space+20)
+			draw.FilledRect(Cont.X-24, Cont.Y+space, Cont.X, Cont.Y+space+20)
 			draw.Color(0,0,0,255)
 			draw.SetTexture(outlineTexture)
-			draw.FilledRect(Cont.X-20, Cont.Y+space, Cont.X, Cont.Y+space+20)
+			draw.FilledRect(Cont.X-24, Cont.Y+space, Cont.X, Cont.Y+space+20)
 			draw.SetTexture(nil)
 		end
 	end
@@ -678,7 +719,7 @@ local function drawContainer(Cont)
 				--Get players team number if equals to ours and make sure they arent in spectator mode
 				if player:GetName() ~= "GOTV" then
 					if player:GetTeamNumber() == lp_team and player:GetTeamNumber() ~= 1 then
-						draw_player(Cont, player, Cont.H*Cont.Space*countnum)
+						draw_player(Cont, player, Cont.H*Cont.Space*countnum, i)
 						countnum = countnum + 1
 						if player:GetIndex() == lp:GetIndex() then
 							draw_health(player)
@@ -691,7 +732,7 @@ local function drawContainer(Cont)
 			if Cont.TeamName == "Enemy" then
 				if player:GetName() ~= "GOTV" then
 					if player:GetTeamNumber() ~= lp_team and player:GetTeamNumber() ~= 1 then
-						draw_player(Cont, player, Cont.H*Cont.Space*countnum)
+						draw_player(Cont, player, Cont.H*Cont.Space*countnum, i)
 						countnum = countnum + 1
 					end
 				end
@@ -712,6 +753,9 @@ local function updateContainers(Cont)
 end
 
 callbacks.Register("Draw", function()
+	updateContainers(MyTeam)
+	updateContainers(Enemy)
+	updateContainers(Health)
 	if gui_moveteam_value ~= gui_moveteam:GetValue() then
         gui_moveteam_value = gui_moveteam:GetValue()
         gui_moveteam_changed()
@@ -764,14 +808,10 @@ callbacks.Register("Draw", function()
 		gui_healthy_value = gui_healthy:GetValue()
         gui_healthy_changed()
 	end
-	updateContainers(MyTeam)
 	drawContainer(MyTeam)
 	moveContainer(MyTeam)
-	updateContainers(Enemy)
 	drawContainer(Enemy)
 	moveContainer(Enemy)
-	updateContainers(Health)
 	--draw_health()
 	moveContainer(Health)
-	
 end)
