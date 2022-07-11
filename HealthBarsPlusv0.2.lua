@@ -549,7 +549,7 @@ local function draw_player(Cont, player, space)
 		draw.Color(Cont.TextColor:GetValue())
 	end
 	if gui_color_ribbon:GetValue() then
-		draw.Color(color_codes(1))
+		draw.Color(color_codes(color_id))
 		local x = Cont.X+(Cont.W*Cont.HealthBarX)-(Cont.W*0.03)
 		local y = Cont.Y+space+(Cont.H*Cont.HealthBarY)
 		local w = x+(Cont.W*0.03)
